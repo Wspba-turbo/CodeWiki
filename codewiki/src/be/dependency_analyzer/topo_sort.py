@@ -292,47 +292,41 @@ def get_leaf_nodes(graph: Dict[str, Set[str]], components: Dict[str, Node]) -> L
 
     
     
-    def concise_node(leaf_nodes: Set[str]) -> Set[str]:
-        concise_leaf_nodes = set()
-        for node in leaf_nodes:
-            if node.endswith("__init__"):
-                # replace by class name
-                concise_leaf_nodes.add(node.replace(".__init__", ""))
-            else:
-                concise_leaf_nodes.add(node)
-        
+    def filter_leaf_nodes(leaf_nodes: Set[str]) -> List[str]:
+        """Filter leaf nodes to keep only valid class/interface/struct components."""
         keep_leaf_nodes = []
 
-        for leaf_node in leaf_nodes:
-            # Skip any leaf nodes that are clearly error strings or invalid identifiers
-            if not isinstance(leaf_node, str) or leaf_node.strip() == "" or any(err_keyword in leaf_node.lower() for err_keyword in ['error', 'exception', 'failed', 'invalid']):
-                logger.debug(f"Skipping invalid leaf node identifier: '{leaf_node}'")
+        for node in leaf_nodes:
+            # Handle __init__ suffix (convert ClassName.__init__ to ClassName)
+            if node.endswith(".__init__"):
+                node = node[:-9]  # Remove ".__init__"
+
+            # Skip invalid identifiers
+            if not isinstance(node, str) or not node.strip():
                 continue
-                
-            if leaf_node in components:
-                if components[leaf_node].component_type in ["class", "interface", "struct"]:
-                    keep_leaf_nodes.append(leaf_node)
-                else:
-                    # logger.debug(f"Leaf node {leaf_node} is a {components[leaf_node].component_type}, removing it")
-                    pass
-            else:
-                # logger.debug(f"Leaf node {leaf_node} not found in components, removing it")
-                pass
+
+            # Skip error-like strings
+            if any(err in node.lower() for err in ['error', 'exception', 'failed', 'invalid']):
+                continue
+
+            # Keep only class/interface/struct components
+            if node in components and components[node].component_type in ["class", "interface", "struct"]:
+                keep_leaf_nodes.append(node)
 
         return keep_leaf_nodes
 
-    concise_leaf_nodes = concise_node(leaf_nodes)
-    if len(concise_leaf_nodes) >= 400:
-        logger.debug(f"Leaf nodes are too many ({len(concise_leaf_nodes)}), removing dependencies of other nodes")
+    filtered_leaf_nodes = filter_leaf_nodes(leaf_nodes)
+    if len(filtered_leaf_nodes) >= 400:
+        logger.debug(f"Leaf nodes are too many ({len(filtered_leaf_nodes)}), removing dependencies of other nodes")
         # Remove nodes that are dependencies of other nodes
         for node, deps in acyclic_graph.items():
             for dep in deps:
                 leaf_nodes.discard(dep)
-        
-        concise_leaf_nodes = concise_node(leaf_nodes)
-    
-    if not leaf_nodes:
+
+        filtered_leaf_nodes = filter_leaf_nodes(leaf_nodes)
+
+    if not filtered_leaf_nodes:
         logger.warning("No leaf nodes found in the graph")
         return []
-    
-    return concise_leaf_nodes 
+
+    return filtered_leaf_nodes 

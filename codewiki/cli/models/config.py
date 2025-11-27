@@ -21,17 +21,19 @@ from codewiki.cli.utils.validation import (
 class Configuration:
     """
     CodeWiki configuration data model.
-    
+
     Attributes:
         base_url: LLM API base URL
         main_model: Primary model for documentation generation
         cluster_model: Model for module clustering
         default_output: Default output directory
+        provider: API provider type ('openai' or 'anthropic')
     """
     base_url: str
     main_model: str
     cluster_model: str
-    default_output: str = "docs"
+    default_output: str = ".codewiki"
+    provider: str = "openai"  # 'openai', 'anthropic', or 'google'
     
     def validate(self):
         """
@@ -52,10 +54,10 @@ class Configuration:
     def from_dict(cls, data: dict) -> 'Configuration':
         """
         Create Configuration from dictionary.
-        
+
         Args:
             data: Configuration dictionary
-            
+
         Returns:
             Configuration instance
         """
@@ -63,7 +65,8 @@ class Configuration:
             base_url=data.get('base_url', ''),
             main_model=data.get('main_model', ''),
             cluster_model=data.get('cluster_model', ''),
-            default_output=data.get('default_output', 'docs'),
+            default_output=data.get('default_output', '.codewiki'),
+            provider=data.get('provider', 'openai'),
         )
     
     def is_complete(self) -> bool:
@@ -77,26 +80,27 @@ class Configuration:
     def to_backend_config(self, repo_path: str, output_dir: str, api_key: str):
         """
         Convert CLI Configuration to Backend Config.
-        
+
         This method bridges the gap between persistent user settings (CLI Configuration)
         and runtime job configuration (Backend Config).
-        
+
         Args:
             repo_path: Path to the repository to document
             output_dir: Output directory for generated documentation
             api_key: LLM API key (from keyring)
-            
+
         Returns:
             Backend Config instance ready for documentation generation
         """
         from codewiki.src.config import Config
-        
+
         return Config.from_cli(
             repo_path=repo_path,
             output_dir=output_dir,
             llm_base_url=self.base_url,
             llm_api_key=api_key,
             main_model=self.main_model,
-            cluster_model=self.cluster_model
+            cluster_model=self.cluster_model,
+            provider=self.provider
         )
 

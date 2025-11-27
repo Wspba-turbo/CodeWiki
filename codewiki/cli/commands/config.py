@@ -50,11 +50,17 @@ def config_group():
     type=str,
     help="Model for module clustering (recommend top-tier)"
 )
+@click.option(
+    "--provider",
+    type=click.Choice(["openai", "anthropic", "google"], case_sensitive=False),
+    help="API provider: 'openai' (OpenAI-compatible APIs), 'anthropic' (native Anthropic API), or 'google' (Google Gemini API)"
+)
 def config_set(
     api_key: Optional[str],
     base_url: Optional[str],
     main_model: Optional[str],
-    cluster_model: Optional[str]
+    cluster_model: Optional[str],
+    provider: Optional[str]
 ):
     """
     Set configuration values for CodeWiki.
@@ -77,34 +83,38 @@ def config_set(
     """
     try:
         # Check if at least one option is provided
-        if not any([api_key, base_url, main_model, cluster_model]):
+        if not any([api_key, base_url, main_model, cluster_model, provider]):
             click.echo("No options provided. Use --help for usage information.")
             sys.exit(EXIT_CONFIG_ERROR)
-        
+
         # Validate inputs before saving
         validated_data = {}
-        
+
         if api_key:
             validated_data['api_key'] = validate_api_key(api_key)
-        
+
         if base_url:
             validated_data['base_url'] = validate_url(base_url)
-        
+
         if main_model:
             validated_data['main_model'] = validate_model_name(main_model)
-        
+
         if cluster_model:
             validated_data['cluster_model'] = validate_model_name(cluster_model)
-        
+
+        if provider:
+            validated_data['provider'] = provider.lower()
+
         # Create config manager and save
         manager = ConfigManager()
         manager.load()  # Load existing config if present
-        
+
         manager.save(
             api_key=validated_data.get('api_key'),
             base_url=validated_data.get('base_url'),
             main_model=validated_data.get('main_model'),
-            cluster_model=validated_data.get('cluster_model')
+            cluster_model=validated_data.get('cluster_model'),
+            provider=validated_data.get('provider')
         )
         
         # Display success messages
@@ -126,7 +136,7 @@ def config_set(
         
         if cluster_model:
             click.secho(f"✓ Cluster model: {cluster_model}", fg="green")
-            
+
             # Warn if not using top-tier model for clustering
             if not is_top_tier_model(cluster_model):
                 click.secho(
@@ -135,9 +145,18 @@ def config_set(
                     fg="yellow"
                 )
                 click.echo(
-                    "   Recommended models: claude-opus, claude-sonnet-4, gpt-4, gpt-4-turbo"
+                    "   Recommended models: claude-opus, claude-sonnet-4, gpt-4, gpt-4-turbo, gemini-2.0-flash, gemini-2.5-pro"
                 )
-        
+
+        if provider:
+            click.secho(f"✓ Provider: {provider}", fg="green")
+            if provider.lower() == "anthropic":
+                click.echo("   Using native Anthropic API")
+            elif provider.lower() == "google":
+                click.echo("   Using Google Gemini API")
+            else:
+                click.echo("   Using OpenAI-compatible API")
+
         click.echo("\n" + click.style("Configuration updated successfully.", fg="green", bold=True))
         
     except ConfigurationError as e:
@@ -192,7 +211,8 @@ def config_show(output_json: bool):
                 "base_url": config.base_url if config else "",
                 "main_model": config.main_model if config else "",
                 "cluster_model": config.cluster_model if config else "",
-                "default_output": config.default_output if config else "docs",
+                "provider": config.provider if config else "openai",
+                "default_output": config.default_output if config else ".codewiki",
                 "config_file": str(manager.config_file_path)
             }
             click.echo(json.dumps(output, indent=2))
@@ -216,6 +236,8 @@ def config_show(output_json: bool):
                 click.echo(f"  Base URL:         {config.base_url or 'Not set'}")
                 click.echo(f"  Main Model:       {config.main_model or 'Not set'}")
                 click.echo(f"  Cluster Model:    {config.cluster_model or 'Not set'}")
+                provider_display = config.provider if config.provider else "openai"
+                click.echo(f"  Provider:         {provider_display}")
             else:
                 click.secho("  Not configured", fg="yellow")
             

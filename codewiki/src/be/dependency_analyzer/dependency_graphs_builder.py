@@ -58,24 +58,7 @@ class DependencyGraphBuilder:
         # Build graph for traversal
         graph = build_graph_from_components(components)
         
-        # Get leaf nodes
+        # Get leaf nodes (already filtered by get_leaf_nodes to only include valid class/interface/struct)
         leaf_nodes = get_leaf_nodes(graph, components)
 
-        # check if leaf_nodes are in components, only keep the ones that are in components and type is one of the following: class, interface, struct
-        keep_leaf_nodes = []
-        for leaf_node in leaf_nodes:
-            # Skip any leaf nodes that are clearly error strings or invalid identifiers
-            if not isinstance(leaf_node, str) or leaf_node.strip() == "" or any(err_keyword in leaf_node.lower() for err_keyword in ['error', 'exception', 'failed', 'invalid']):
-                logger.warning(f"Skipping invalid leaf node identifier: '{leaf_node}'")
-                continue
-                
-            if leaf_node in components:
-                if components[leaf_node].component_type in ["class", "interface", "struct"]:
-                    keep_leaf_nodes.append(leaf_node)
-                else:
-                    # logger.debug(f"Leaf node {leaf_node} is a {components[leaf_node].component_type}, removing it")
-                    pass
-            else:
-                logger.warning(f"Leaf node {leaf_node} not found in components, removing it")
-        
-        return components, keep_leaf_nodes
+        return components, leaf_nodes

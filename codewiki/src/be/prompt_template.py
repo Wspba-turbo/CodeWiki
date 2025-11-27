@@ -133,22 +133,25 @@ Here is list of all potential core components of the repository (It's normal tha
 </POTENTIAL_CORE_COMPONENTS>
 
 Please group the components into groups such that each group is a set of components that are closely related to each other and together they form a module. DO NOT include components that are not essential to the repository.
+
+IMPORTANT: The "components" array must contain EXACT component names as they appear in the POTENTIAL_CORE_COMPONENTS list above. Each component name should be a fully qualified name (e.g., "module.submodule.ClassName"), NOT just a module path. Copy the component names exactly as shown.
+
 Firstly reason about the components and then group them and return the result in the following format:
 <GROUPED_COMPONENTS>
 {{
     "module_name_1": {{
         "path": <path_to_the_module_1>, # the path to the module can be file or directory
         "components": [
-            <component_name_1>,
-            <component_name_2>,
+            "<exact_component_name_from_list>",
+            "<exact_component_name_from_list>",
             ...
         ]
     }},
     "module_name_2": {{
         "path": <path_to_the_module_2>,
         "components": [
-            <component_name_1>,
-            <component_name_2>,
+            "<exact_component_name_from_list>",
+            "<exact_component_name_from_list>",
             ...
         ]
     }},
@@ -171,22 +174,24 @@ Here is list of all potential core components of the module {module_name} (It's 
 
 Please group the components into groups such that each group is a set of components that are closely related to each other and together they form a smaller module. DO NOT include components that are not essential to the module.
 
+IMPORTANT: The "components" array must contain EXACT component names as they appear in the POTENTIAL_CORE_COMPONENTS list above. Each component name should be a fully qualified name (e.g., "module.submodule.ClassName"), NOT just a module path. Copy the component names exactly as shown.
+
 Firstly reason based on given context and then group them and return the result in the following format:
 <GROUPED_COMPONENTS>
 {{
     "module_name_1": {{
         "path": <path_to_the_module_1>, # the path to the module can be file or directory
         "components": [
-            <component_name_1>,
-            <component_name_2>,
+            "<exact_component_name_from_list>",
+            "<exact_component_name_from_list>",
             ...
         ]
     }},
     "module_name_2": {{
         "path": <path_to_the_module_2>,
         "components": [
-            <component_name_1>,
-            <component_name_2>,
+            "<exact_component_name_from_list>",
+            "<exact_component_name_from_list>",
             ...
         ]
     }},

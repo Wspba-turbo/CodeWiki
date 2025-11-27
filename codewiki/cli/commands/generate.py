@@ -35,8 +35,8 @@ from codewiki.cli.models.job import GenerationOptions
     "--output",
     "-o",
     type=click.Path(),
-    default="docs",
-    help="Output directory for generated documentation (default: ./docs)",
+    default=".codewiki",
+    help="Output directory for generated documentation (default: ./.codewiki)",
 )
 @click.option(
     "--create-branch",
@@ -72,7 +72,7 @@ def generate_command(
     Generate comprehensive documentation for a code repository.
     
     Analyzes the current repository and generates documentation using LLM-powered
-    analysis. Documentation is output to ./docs/ by default.
+    analysis. Documentation is output to ./.codewiki/ by default.
     
     Examples:
     
@@ -190,7 +190,7 @@ def generate_command(
             create_branch=create_branch,
             github_pages=github_pages,
             no_cache=no_cache,
-            custom_output=output if output != "docs" else None
+            custom_output=output if output != ".codewiki" else None
         )
         
         # Create generator
@@ -202,6 +202,7 @@ def generate_command(
                 'cluster_model': config.cluster_model,
                 'base_url': config.base_url,
                 'api_key': api_key,
+                'provider': config.provider,
             },
             verbose=verbose,
             generate_html=github_pages

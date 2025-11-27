@@ -82,22 +82,24 @@ class ConfigManager:
             raise ConfigurationError(f"Failed to load configuration: {e}")
     
     def save(
-        self, 
+        self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         main_model: Optional[str] = None,
         cluster_model: Optional[str] = None,
-        default_output: Optional[str] = None
+        default_output: Optional[str] = None,
+        provider: Optional[str] = None
     ):
         """
         Save configuration to file and keyring.
-        
+
         Args:
             api_key: API key (stored in keyring)
             base_url: LLM API base URL
             main_model: Primary model
             cluster_model: Clustering model
             default_output: Default output directory
+            provider: API provider type ('openai' or 'anthropic')
         """
         # Ensure config directory exists
         try:
@@ -114,7 +116,7 @@ class ConfigManager:
                     base_url="",
                     main_model="",
                     cluster_model="",
-                    default_output="docs"
+                    default_output=".codewiki"
                 )
         
         # Update fields if provided
@@ -126,6 +128,8 @@ class ConfigManager:
             self._config.cluster_model = cluster_model
         if default_output is not None:
             self._config.default_output = default_output
+        if provider is not None:
+            self._config.provider = provider
         
         # Validate configuration
         self._config.validate()

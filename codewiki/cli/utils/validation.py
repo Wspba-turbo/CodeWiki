@@ -220,6 +220,7 @@ def is_top_tier_model(model: str) -> bool:
         'claude-sonnet',
         'gpt-4',
         'gpt-5',
+        'gemini-2.0',
         'gemini-2.5',
     ]
     

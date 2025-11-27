@@ -51,6 +51,7 @@ class Config:
     main_model: str
     cluster_model: str
     fallback_model: str = FALLBACK_MODEL_1
+    provider: str = "openai"  # 'openai', 'anthropic', or 'google'
     
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> 'Config':
@@ -80,11 +81,12 @@ class Config:
         llm_api_key: str,
         main_model: str,
         cluster_model: str,
-        fallback_model: str = FALLBACK_MODEL_1
+        fallback_model: str = FALLBACK_MODEL_1,
+        provider: str = "openai"
     ) -> 'Config':
         """
         Create configuration for CLI context.
-        
+
         Args:
             repo_path: Repository path
             output_dir: Output directory for generated docs
@@ -93,13 +95,14 @@ class Config:
             main_model: Primary model
             cluster_model: Clustering model
             fallback_model: Fallback model
-            
+            provider: API provider type ('openai', 'anthropic', or 'google')
+
         Returns:
             Config instance
         """
         repo_name = os.path.basename(os.path.normpath(repo_path))
         base_output_dir = os.path.join(output_dir, "temp")
-        
+
         return cls(
             repo_path=repo_path,
             output_dir=base_output_dir,
@@ -110,5 +113,6 @@ class Config:
             llm_api_key=llm_api_key,
             main_model=main_model,
             cluster_model=cluster_model,
-            fallback_model=fallback_model
+            fallback_model=fallback_model,
+            provider=provider
         )
